@@ -6,10 +6,13 @@
 3. Press 'd' if you want to detect your sign
 '''
 ############################################################################################################
+
+#General libraries
 import cv2
 from pynput.keyboard import Listener, Key
 from collections import namedtuple
 import numpy as np
+
 #Model making imports
 import tensorflow as tf
 from tensorflow.python.keras.models import Sequential
@@ -42,9 +45,36 @@ from matplotlib.pyplot import imshow
 from matplotlib import pyplot as plt
 from IPython.display import display
 
+############################################################################################################
 
 #_______ LOADING THE TRAINED MODEL TO MAKE PREDICTIONS ON UNSEEN DATA ____
+
+model_json_file =  "/Users/ewa_anna_szyszka/Desktop/model.json"
+model_weights_file = "/Users/ewa_anna_szyszka/Desktop/my_model.h5"
 model = models.load_model('/Users/ewa_anna_szyszka/Desktop/🎓/PyCON/my_model.h5')
+
+#______ OBJECT OPENING TRAINED MODEL AND PREDICTING IMAGES FROM CAPTURED DATA_____
+
+class SignLanguageModel(object):
+
+    LETTER_LIST = ["A", "B", "C", "D", "E","F", "G", "H", "I", "J","K", "L", "M",'N','O','P','R','S','T','U','W','X','Y','Z']
+
+    def __init__(self, model_json_file, model_weights_file):
+
+        # load model from JSON file
+        with open(model_json_file, "r") as json_file:
+            loaded_model_json = json_file.read()
+            self.loaded_model = model_from_json(loaded_model_json)
+
+        # load weights into the new model
+        self.loaded_model.load_weights(model_weights_file)
+        self.loaded_model._make_predict_function()
+
+    def predict_letter(self, img):
+        self.preds = self.loaded_model.predict(img)
+        #print (self.preds)  #This is the one hot encoded list of predictions
+        return SignLanguageModel.LETTER_LIST[np.argmax(self.preds)]
+
 ############################################################################################################
 
 hand_hist = None
@@ -55,6 +85,7 @@ hand_rect_one_y = None
 
 hand_rect_two_x = None
 hand_rect_two_y = None
+
 
 
 def rescale_frame(frame, wpercent=70, hpercent=70):   #originally it was 130 and 130
@@ -135,28 +166,6 @@ def centroid(max_contour):
     else:
         return None
 
-'''
-def farthest_point(defects, contour, centroid):
-    if defects is not None and centroid is not None:
-        s = defects[:, 0][:, 0]
-        cx, cy = centroid
-
-        x = np.array(contour[s][:, 0][:, 0], dtype=np.float)
-        y = np.array(contour[s][:, 0][:, 1], dtype=np.float)
-
-        xp = cv2.pow(cv2.subtract(x, cx), 2)
-        yp = cv2.pow(cv2.subtract(y, cy), 2)
-        dist = cv2.sqrt(cv2.add(xp, yp))
-
-        dist_max_i = np.argmax(dist)
-
-        if dist_max_i < len(s):
-            farthest_defect = s[dist_max_i]
-            farthest_point = tuple(contour[farthest_defect][0])
-            return farthest_point
-        else:
-            return None
-'''
 
 def draw_circles(frame, traverse_point):
     if traverse_point is not None:
@@ -165,8 +174,14 @@ def draw_circles(frame, traverse_point):
 
 
 list_of_centroids = []
+images_for_recognition = []  #list of images on which detection will be done
+img_counter = 0
+
 #we find the convexity defect here which is the farthest point from the centroid
 def manage_image_opr(frame, hand_hist):
+    global img_counter
+    global images_for_recognition
+
     hist_mask_image = hist_masking(frame, hand_hist)
 
     hist_mask_image = cv2.erode(hist_mask_image, None, iterations=2)
@@ -236,28 +251,34 @@ def manage_image_opr(frame, hand_hist):
         areas = (Upper_horizontal_movement,Middle_horizontal_movement,Lower_horizontal_movement,Left_vertical_movement,Middle_vertical_movement,Right_vertical_mevement)
         areas_names = ('Upper_horizontal_movement','Middle_horizontal_movement','Lower_horizontal_movement','Left_vertical_movement','Middle_vertical_movement','Right_vertical_mevement')
 
-        print(areas.index(max(areas)))
-        print(areas_names[areas.index(max(areas))])
+        #print(areas.index(max(areas)))  #index of the detected movement
+        detected_movement = areas_names[areas.index(max(areas))]
+        print(detected_movement)
 
-        '''
-        if (threshold_upper/len(list_of_centroids)) > cap:
-            print('Upper horizontal movement')
-        elif (threshold_middle/len(list_of_centroids)) > cap:
-            print('Middle horizontal movement')
-        elif (threshold_lower/len(list_of_centroids)) > cap:
-            print('Lower horizontal movement')
+        ###########################THIS IS THE OLD PIPELINE ###############################
+        #TRY TO MAKE WHEN D PRESSED DETECTION WITHOUT LOADING THINGS AGAIN
+        if detected_movement == 'Middle_horizontal_movement':
+            img_name = "../../Code/ImageRecognition/recognition/horizontal/opencv_frame_{}.png".format(img_counter)   #REMEMBER TO SET THE PATH CORRECTLY YOU CARROT!
+            status = cv2.imwrite(img_name, rescale_frame(frame))
+            if status is True:
+                print("{} written!".format(img_name))
+            else:
+                print("problem")
+            img_counter += 1
 
-        elif (threshold_left/len(list_of_centroids)) > cap:
-            print('Left vertical movement')
-        elif (threshold_middle_vertical/len(list_of_centroids)) > cap:
-            print('Middle vertical movement')
-        elif (threshold_right/len(list_of_centroids)) > cap:
-            print('Right vertical movement')
 
-        else:
-            print('total chaos')
-        '''
+            #loading again the images
+            images=glob.glob("../../Code/ImageRecognition/recognition/horizontal/*.png")
 
+            for image in images:
+                img = Image.open(image)
+                images_for_recognition.append(img)
+
+            for i in images_for_recognition:
+                new_array = cv2.resize(np.array(i), (50, 50))
+                new_array = new_array.reshape(1,50,50,3)
+                a = SignLanguageModel(model_json_file, model_weights_file)
+                print(a.predict_letter(new_array))
 
         print(threshold_upper/len(list_of_centroids))
         print(threshold_middle/len(list_of_centroids))
@@ -268,37 +289,13 @@ def manage_image_opr(frame, hand_hist):
 
         list_of_centroids.clear
 
-    #_______ LOADING THE TRAINED MODEL TO MAKE PREDICTIONS ON UNSEEN DATA ____
-    #model = models.load_model('my_model.h5')
 
-    ################################################################################################################################################
-
-    #if cnt_centroid[0] in range(0,900) and cnt_centroid[1] in range(300,400):
-    #    print('A')
-
-
-    #range_tuple = namedtuple('range_tuple', 'low high')
-    #t = range_tuple(300, 400)
-    #if t.low <= cnt_centroid <= t.high:
-    #    print('vert')
 
     if max_cont is not None:
         hull = cv2.convexHull(max_cont, returnPoints=False)
         defects = cv2.convexityDefects(max_cont, hull)
 
-        #Here I commented out the tiny points following the hand
-        '''
-        far_point = farthest_point(defects, max_cont, cnt_centroid) #those are the yellow points
-        #print("Centroid : " + str(cnt_centroid) + ", farthest Point : " + str(far_point))
-        cv2.circle(frame, far_point, 5, [0, 0, 255], -1)
-        if len(traverse_point) < 20:
-            traverse_point.append(far_point)
-        else:
-            traverse_point.pop(0)
-            traverse_point.append(far_point)
 
-        draw_circles(frame, traverse_point)
-        '''
 
 def main():
     global hand_hist
@@ -321,24 +318,6 @@ def main():
             frame = draw_rect(frame)
 
         cv2.imshow("Live Feed", rescale_frame(frame))
-
-        #THIS WA ADDED
-        '''
-        img_counter = 0
-
-        if pressed_key & 0xFF == ord('d'):
-            #______ OBJECT OPENING TRAINED MODEL AND PREDICTING IMAGES FROM CAPTURED DATA_____
-
-
-            # SPACE pressed
-            img_name = "Desktop/Code/ImageRecognition/datacapture/opencv_frame_{}.png".format(img_counter)
-            cv2.imwrite(img_name, frame)
-            print("{} written!".format(img_name))
-            img_counter += 1
-
-            '''
-
-        #UNTIL HERE ADDED
 
         if pressed_key == 27:
             break
