@@ -75,7 +75,9 @@ class SignLanguageModel(object):
         #print (self.preds)  #This is the one hot encoded list of predictions
         return SignLanguageModel.LETTER_LIST[np.argmax(self.preds)]
 
-############################################################################################################
+
+
+
 
 hand_hist = None
 traverse_point = []
@@ -177,6 +179,48 @@ list_of_centroids = []
 images_for_recognition = []  #list of images on which detection will be done
 img_counter = 0
 
+
+############################# tu modyfikujesz ######################
+#ONE THE DIFFERENT TYPE OF MOVEMENTS DETECTED DIRECT PHOTOS TO DIFFERENT DETECTION MODELS
+class Inference:
+
+    def __init__(self, detected_movement,frame):
+        self.detected_movement = detected_movement
+        self.frame = frame
+        #self.prediction = prediction
+
+
+    def type_of_VGG_model(self,detected_movement,frame):
+        global img_counter
+
+        #movement_type = ['Middle_vertical_movement','Middle_horizontal_movement','Left_vertical_movement','Right_vertical_mevement','Upper_horizontal_movement','Lower_horizontal_movement','Stillness']
+
+        #SAVING THE IMAGE TO CORRECT FOLDERS BASED ON THE TYPE OF THE MOVEMENT DETECTED
+        img_name = "../../Code/ImageRecognition/recognition/{}/opencv_frame_{}.png".format(detected_movement,img_counter)   #REMEMBER TO SET THE PATH CORRECTLY YOU CARROT!
+        status = cv2.imwrite(img_name, rescale_frame(frame))
+        if status is True:
+            print("{} written!".format(img_name))
+        else:
+            print("problem")
+        img_counter += 1
+
+
+        #loading again the images
+        images=glob.glob("../../Code/ImageRecognition/recognition/{}/*.png".format(detected_movement))
+
+        for image in images:
+            img = Image.open(image)
+            images_for_recognition.append(img)
+
+        for i in images_for_recognition:
+            new_array = cv2.resize(np.array(i), (50, 50))
+            new_array = new_array.reshape(1,50,50,3)
+            a = SignLanguageModel(model_json_file, model_weights_file)
+            return a.predict_letter(new_array)
+
+
+############################################################################################################
+
 #we find the convexity defect here which is the farthest point from the centroid
 def manage_image_opr(frame, hand_hist):
     global img_counter
@@ -211,6 +255,8 @@ def manage_image_opr(frame, hand_hist):
         threshold_middle_vertical = 0.0
         threshold_right = 0.0
 
+        threshold_still = 0.0
+
         ################## Checking to which HORIZONTAL tiers did the majority of the points fell ##################
 
         for i in range(len(list_of_centroids)):
@@ -237,6 +283,12 @@ def manage_image_opr(frame, hand_hist):
             if list_of_centroids[i][0] in range(800,1280) and list_of_centroids[i][1] in range(0,716):
                 threshold_right+= 1
 
+            areas = [(threshold_upper/len(list_of_centroids)), (threshold_middle/len(list_of_centroids)), (threshold_lower/len(list_of_centroids)), (threshold_left/len(list_of_centroids)), (threshold_middle_vertical/len(list_of_centroids)), (threshold_right/len(list_of_centroids)) ]
+
+
+            #STILLNESS DETECTOR IF IN THE MIDDLE BOX AREA - not in the intersection
+            if list_of_centroids[i][0] in range(400,800) and list_of_centroids[i][1] in range(250,550) and all(i <= 0.75 for i in areas):
+                threshold_still+=1
 
         #70% threshold is set up
         cap = 0.7
@@ -248,8 +300,17 @@ def manage_image_opr(frame, hand_hist):
         Middle_vertical_movement = (threshold_middle_vertical/len(list_of_centroids))
         Right_vertical_mevement = (threshold_right/len(list_of_centroids))
 
-        areas = (Upper_horizontal_movement,Middle_horizontal_movement,Lower_horizontal_movement,Left_vertical_movement,Middle_vertical_movement,Right_vertical_mevement)
-        areas_names = ('Upper_horizontal_movement','Middle_horizontal_movement','Lower_horizontal_movement','Left_vertical_movement','Middle_vertical_movement','Right_vertical_mevement')
+
+        #STILLNESS DETECTOR IF WE ARE IN THE INTERSECTION - middle box
+        Stillness = 0
+        if Middle_vertical_movement == 1.0 and Middle_horizontal_movement == 1.0:
+            Stillness = 1.1
+        else:
+            Stillness = (threshold_still/len(list_of_centroids))
+
+
+        areas = (Upper_horizontal_movement,Middle_horizontal_movement,Lower_horizontal_movement,Left_vertical_movement,Middle_vertical_movement,Right_vertical_mevement,Stillness)
+        areas_names = ('Upper_horizontal_movement','Middle_horizontal_movement','Lower_horizontal_movement','Left_vertical_movement','Middle_vertical_movement','Right_vertical_mevement',"Stillness")
 
         #print(areas.index(max(areas)))  #index of the detected movement
         detected_movement = areas_names[areas.index(max(areas))]
@@ -257,6 +318,15 @@ def manage_image_opr(frame, hand_hist):
 
         ###########################THIS IS THE OLD PIPELINE ###############################
         #TRY TO MAKE WHEN D PRESSED DETECTION WITHOUT LOADING THINGS AGAIN
+
+
+        ############################### TUTAJ MODYFIKUJESZ ###############################
+
+        z = Inference('d',frame)
+        print(z.type_of_VGG_model(detected_movement,frame))
+
+        '''
+        #POPRAWNY STARY KOD
         if detected_movement == 'Middle_horizontal_movement':
             img_name = "../../Code/ImageRecognition/recognition/horizontal/opencv_frame_{}.png".format(img_counter)   #REMEMBER TO SET THE PATH CORRECTLY YOU CARROT!
             status = cv2.imwrite(img_name, rescale_frame(frame))
@@ -279,13 +349,14 @@ def manage_image_opr(frame, hand_hist):
                 new_array = new_array.reshape(1,50,50,3)
                 a = SignLanguageModel(model_json_file, model_weights_file)
                 print(a.predict_letter(new_array))
-
+                '''
         print(threshold_upper/len(list_of_centroids))
         print(threshold_middle/len(list_of_centroids))
         print(threshold_lower/len(list_of_centroids))
         print((threshold_left/len(list_of_centroids)))
         print((threshold_middle_vertical/len(list_of_centroids)))
         print((threshold_right/len(list_of_centroids)))
+        print(Stillness)
 
         list_of_centroids.clear
 
