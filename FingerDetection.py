@@ -208,6 +208,8 @@ class Inference:
         #loading again the images
         images=glob.glob("../../Code/ImageRecognition/recognition/{}/*.png".format(detected_movement))
 
+
+        #here you need to add different prediction models based on different folder
         for image in images:
             img = Image.open(image)
             images_for_recognition.append(img)
@@ -303,7 +305,7 @@ def manage_image_opr(frame, hand_hist):
 
         #STILLNESS DETECTOR IF WE ARE IN THE INTERSECTION - middle box
         Stillness = 0
-        if Middle_vertical_movement == 1.0 and Middle_horizontal_movement == 1.0:
+        if Middle_vertical_movement >= 0.93 and Middle_horizontal_movement >= 0.93:
             Stillness = 1.1
         else:
             Stillness = (threshold_still/len(list_of_centroids))
