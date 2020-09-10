@@ -4,6 +4,13 @@
 This folder contains implementation of a hand gesture recogniser for polish sign language. Often refered to in literature as PJM. 
 As of know this readme contains solely short descriptions of what each script does. This is subject to change in the future, as the project evolves.
 
+## CORE_ML_experiment.playground
+
+This folder contains my tests of feasibility whether writing an app would be doable or not for this project
+
+## SignRecognitionApp
+
+Adaptation of a Pokedex project into Sign Language recognition app to test the feasibility of this direction
 
 ## Fingerdetection.py
 
