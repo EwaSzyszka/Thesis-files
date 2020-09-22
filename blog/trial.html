@@ -1,0 +1,148 @@
+<!doctype html>
+<meta charset="utf-8">
+<script src="https://distill.pub/template.v1.js"></script>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+
+
+
+<script type="text/front-matter">
+
+  title: "Sign Language Recognition"
+  description: "Thesis Project"
+  authors:
+  - Ewa Szyszka: http://colah.github.io
+  affiliations:
+  - Minerva Schools at KGI: http://g.co/brain
+
+</script>
+
+
+
+<!-- This is where the pretty alignment of picture and argument happens -->
+<head>
+<style>
+
+  .arguments-figure {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+  .arguments-figure > div {
+    max-width: 700px;
+    margin-bottom: 20px;
+    margin-left: 0px;
+    margin-right: 0px;
+    display: flex;
+    align-items: flex-start;
+  }
+  .arguments-figure > div:last-child {
+    margin-bottom: 0px;
+  }
+  .arguments-figure div img {
+    flex-basis: 120px;
+    max-width: 120px;
+    border-radius: 8px;
+    margin-right: 30px;
+    flex-shrink: 4;
+  }
+  .arguments-figure div div {
+    flex-basis: 550px;
+    flex-shrink: 1;
+  }
+  .arguments-figure div h4 {
+    margin-top: -4px;
+    margin-bottom: 8px;
+  }
+
+</style>
+</head>
+
+
+
+
+
+
+<dt-article>
+  <h1>Sign Language Recognition</h1>
+  <h2>The project focuses on implementing a PJM recognition tool.</h2>
+  <dt-byline></dt-byline>
+
+
+
+
+  <h2>Project motivation</h2>
+  <figure class="arguments-figure">
+
+  <div>
+            <img src="https://images.unsplash.com/photo-1584558611757-1ba590b2101e?ixlib=rb-1.2.1&auto=format&fit=crop&w=934&q=80" style="filter: brightness(97%);">
+            <div>
+              <h4>Argument 1: Diversity protection</h4>
+            <p>Around the world there are over 135 sign languages spoken. </p>
+            </div>
+  </div>
+  <div>
+            <img src="https://images.unsplash.com/photo-1501472312651-726afe119ff1?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=934&q=80" style="filter: brightness(97%);">
+            <div>
+              <h4>Argument 2: Synthetic Examples</h4>
+            <p>Curve detectors respond as expected to a range of synthetic curves images created with varying orientations, curvatures, and backgrounds. They fire only near the expected orientation, and do not fire strongly for straight lines or sharp corners.</p>
+            </div>
+  </div>
+  <div>
+            <img src="https://images.unsplash.com/photo-1525340941843-5ab5dd974e0d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=934&q=80" style="filter: brightness(97%);">
+            <div>
+              <h4>Argument 3: Synthetic Examples</h4>
+            <p>Curve detectors respond as expected to a range of synthetic curves images created with varying orientations, curvatures, and backgrounds. They fire only near the expected orientation, and do not fire strongly for straight lines or sharp corners.</p>
+            </div>
+  </div>
+
+</figure>
+
+
+
+
+
+  <dt-code block language="javascript">
+  var x = 25;
+  function(x){
+    return x * x;
+  }
+</dt-code>
+<div id="observablehq-6cf0a54c"></div>
+<script type="module">
+import {Runtime, Inspector} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
+import define from "https://api.observablehq.com/@mootari/param-widget.js?v=3";
+const inspect = Inspector.into("#observablehq-6cf0a54c");
+(new Runtime).module(define, name => name === "linstep" ? inspect() : undefined);
+</script>
+
+	<div id="observablehq-ec92c298"></div>
+<script type="module">
+import {Runtime, Inspector} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
+import define from "https://api.observablehq.com/@mootari/param-widget.js?v=3";
+const inspect = Inspector.into("#observablehq-ec92c298");
+(new Runtime).module(define, name => name === "doc_linstep" ? inspect() : undefined);
+</script>
+  <p>We can also cite <dt-cite key="gregor2015draw"></dt-cite> external publications.</p>
+<div id="observablehq-717ef042"></div>
+<script type="module">
+import {Runtime, Inspector} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
+import define from "https://api.observablehq.com/@observablehq/downloading-and-embedding-notebooks.js?v=3";
+const inspect = Inspector.into("#observablehq-717ef042");
+(new Runtime).module(define, name => name === "graphic" ? inspect() : undefined);
+</script>
+</dt-article>
+
+
+<dt-appendix>
+</dt-appendix>
+
+<script type="text/bibliography">
+  @article{gregor2015draw,
+    title={DRAW: A recurrent neural network for image generation},
+    author={Gregor, Karol and Danihelka, Ivo and Graves, Alex and Rezende, Danilo Jimenez and Wierstra, Daan},
+    journal={arXivreprint arXiv:1502.04623},
+    year={2015},
+    url={https://arxiv.org/pdf/1502.04623.pdf}
+  }
+</script>
